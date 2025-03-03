@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.ExampleTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-03-03T14:11:57" hostname="Valerias-MacBook-Pro.local" time="0.016">
+  <properties/>
+  <testcase name="testThrow" classname="org.example.ExampleTest" time="0.013"/>
+  <testcase name="testMock" classname="org.example.ExampleTest" time="0.0"/>
+  <testcase name="testMatchers" classname="org.example.ExampleTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
