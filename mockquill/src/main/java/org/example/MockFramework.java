@@ -5,6 +5,7 @@ import java.lang.reflect.Proxy;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.example.Invocation.Invocation;
@@ -51,8 +52,8 @@ public class MockFramework {
                 MyInvocationHandler handler = new MyInvocationHandler();
                 Class<? extends T> dynamicType = new ByteBuddy()
                         .subclass(clazz)
-                        .method(ElementMatchers.any())
-                        .intercept(MethodDelegation.to(handler))
+                        .method(ElementMatchers.not(ElementMatchers.named("clone")))
+                        .intercept(InvocationHandlerAdapter.of(handler))
                         .make()
                         .load(clazz.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
                         .getLoaded();
