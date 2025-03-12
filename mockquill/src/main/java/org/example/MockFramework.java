@@ -14,13 +14,13 @@ import org.example.Stubbing.OngoingStubbingImpl;
 import org.example.Invocation.SpyInvocationHandler;
 
 /**
- * The main entry point for the mock framework.
+ * Основной класс для работы с mock и spy.
  */
 public class MockFramework {
 
     /**
-     * Initializes fields annotated with @Mock in the given test instance.
-     * Automatically injects mock instances into the fields.
+     * Инициализирует поля с аннотацией @Mock в переданном объекте теста.
+     * Автоматически создаёт моки и присваивает их полям.
      */
     public static void initMocks(Object testInstance) {
         for (Field field : testInstance.getClass().getDeclaredFields()) {
@@ -31,7 +31,7 @@ public class MockFramework {
     }
 
     /**
-     * Creates and assigns a mock instance to the given field.
+     * Создаёт мок и присваивает его указанному полю.
      */
     private static void setMockToField(Object testInstance, Field field) {
         field.setAccessible(true);
@@ -44,9 +44,10 @@ public class MockFramework {
     }
 
     /**
-     * Creates a mock for the given type.
-     * - Uses Java Proxy if the class is an interface.
-     * - Uses ByteBuddy for concrete classes.
+     * Создаёт мок-объект для переданного класса.
+     * - Если это интерфейс, используется Java Proxy.
+     * - Если это динамический класс, используется ByteBuddy.
+     *   TODO: статические классы
      */
     public static <T> T mock(Class<T> clazz) {
         MyInvocationHandler handler = new MyInvocationHandler();
@@ -56,7 +57,7 @@ public class MockFramework {
     }
 
     /**
-     * Creates a mock for an interface using Java Proxy.
+     * Создаёт мок для интерфейса с помощью Java Proxy.
      */
     @SuppressWarnings("unchecked")
     private static <T> T createInterfaceMock(Class<T> clazz, MyInvocationHandler handler) {
@@ -64,7 +65,7 @@ public class MockFramework {
     }
 
     /**
-     * Creates a mock for a concrete class using ByteBuddy.
+     * Создаёт мок для конкретного класса с использованием ByteBuddy.
      */
     private static <T> T createClassMock(Class<T> clazz, MyInvocationHandler handler) {
         try {
@@ -78,13 +79,13 @@ public class MockFramework {
                     .getDeclaredConstructor()
                     .newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create class mock for " + clazz, e);
+            throw new RuntimeException("Failed to create classs mock for " + clazz, e);
         }
     }
 
     /**
-     * Captures a method invocation on a mock for stubbing.
-     * Usage: when(mock.method(...)).thenReturn(...);
+     * Запоминает вызов метода для последующего задания заглушки.
+     * Использование: when(mock.method(...)).thenReturn(...);
      */
     public static <T> OngoingStubbing<T> when(T methodCall) {
         Invocation invocation = MyMock.getLastInvocation();
@@ -96,12 +97,12 @@ public class MockFramework {
     }
 
     /**
-     * Creates a spy that wraps a real object.
-     * The spy delegates to the real object unless a method is stubbed.
+     * Создаёт шпион (spy), который оборачивает реальный объект.
+     * Вызовы делегируются реальному объекту, если для них нет заглушки.
      */
     public static <T> T spy(T realObject) {
         if (realObject == null) {
-            throw new IllegalArgumentException("Cannot spy on a null object");
+            throw new IllegalArgumentException("Cannot spy on null-object");
         }
 
         return realObject.getClass().isInterface() ? createInterfaceSpy(realObject)
@@ -109,7 +110,7 @@ public class MockFramework {
     }
 
     /**
-     * Creates a spy for an interface using Java Proxy.
+     * Создаёт шпион для интерфейса с использованием Java Proxy.
      */
     @SuppressWarnings("unchecked")
     private static <T> T createInterfaceSpy(T realObject) {
@@ -121,7 +122,7 @@ public class MockFramework {
     }
 
     /**
-     * Creates a spy for a concrete class using ByteBuddy.
+     * Создаёт шпион для конкретного класса с использованием ByteBuddy.
      */
     @SuppressWarnings("unchecked")
     private static <T> T createClassSpy(T realObject) {
@@ -139,14 +140,14 @@ public class MockFramework {
             copyFields(realObject, spyInstance);
             return spyInstance;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create spy for " + realObject.getClass(), e);
+            throw new RuntimeException("Cannot make spy on " + realObject.getClass(), e);
         }
     }
 
     /**
-     * Copies all declared fields from the source to the target instance.
-     * - This is a shallow copy.
-     * - Fields declared as final may not be updated.
+     * Копирует все объявленные поля из одного объекта в другой.
+     * - Это shallow копирование.
+     * - Финальные поля могут не обновляться.
      */
     private static void copyFields(Object source, Object target) {
         Class<?> clazz = source.getClass();
@@ -159,14 +160,14 @@ public class MockFramework {
     }
 
     /**
-     * Copies a single field value from source to target.
+     * Копирует значение одного поля из исходного объекта в целевой.
      */
     private static void copyField(Object source, Object target, Field field) {
         field.setAccessible(true);
         try {
             field.set(target, field.get(source));
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to copy field: " + field.getName(), e);
+            throw new RuntimeException("Cannot copy fields: " + field.getName(), e);
         }
     }
 }
