@@ -34,7 +34,7 @@ public class ExampleTest {
 
     @Test
     public void testMatchers() {
-        when(someService.complexMethod(eq("input"), anyInt(), matches("[a-z]")))
+        when(someService.complexMethod(String.valueOf(eq("input")), anyInt(), matches("[a-z]")))
                 .thenReturn("Complex Mocked Value");
         assertEquals("Complex Mocked Value", someService.complexMethod("input", 123, "b"));
         assertNotEquals("Complex Mocked Value", someService.complexMethod("input", 123, "1"));

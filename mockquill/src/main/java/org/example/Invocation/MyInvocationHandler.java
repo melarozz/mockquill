@@ -1,31 +1,16 @@
 package org.example.Invocation;
 
-import org.example.AllMatchers.ArgumentMatcher;
-import org.example.AllMatchers.Matchers;
-import org.example.MyMock;
-import org.example.Stubbing.Stub;
-
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
- * Invocation handler for mocks.
+ * Invocation handler для моков.
+ * Если для вызова не настроена заглушка, возвращаются значения по умолчанию,
+ * соответствующие типу возвращаемого значения метода.
  */
 public class MyInvocationHandler extends AbstractInvocationHandler {
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        List<ArgumentMatcher<?>> matchers = Matchers.pullMatchers();
-        Invocation invocation = new Invocation(proxy, method, args, matchers, this);
-        MyMock.setLastInvocation(invocation);
-        Stub stub = findStub(invocation);
-        if (stub != null) {
-            if (stub.exception()) {
-                throw (Throwable) stub.value();
-            } else {
-                return stub.value();
-            }
-        }
+    protected Object proceed(Method method, Object[] args) throws Throwable {
         return getDefaultValue(method.getReturnType());
     }
 
