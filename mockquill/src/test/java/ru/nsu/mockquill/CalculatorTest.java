@@ -1,7 +1,7 @@
-package org.example;
+package ru.nsu.mockquill;
 
 import static org.junit.Assert.assertEquals;
-import static org.example.MockFramework.when;
+import static ru.nsu.mockquill.MockFramework.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,5 +21,7 @@ public class CalculatorTest {
         when(calculator.add(2, 3)).thenReturn(10);
         int result = calculator.add(2, 3);
         assertEquals(10, result);
+        result = calculator.multiply(2,3);
+        assertEquals(0, result);
     }
 }

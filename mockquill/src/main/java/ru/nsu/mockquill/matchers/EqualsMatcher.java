@@ -1,4 +1,4 @@
-package org.example.AllMatchers;
+package ru.nsu.mockquill.matchers;
 
 import java.util.Objects;
 

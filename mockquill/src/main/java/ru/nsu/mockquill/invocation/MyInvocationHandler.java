@@ -1,9 +1,9 @@
-package org.example.Invocation;
+package ru.nsu.mockquill.invocation;
 
-import org.example.AllMatchers.ArgumentMatcher;
-import org.example.AllMatchers.Matchers;
-import org.example.MyMock;
-import org.example.Stubbing.Stub;
+import ru.nsu.mockquill.matchers.ArgumentMatcher;
+import ru.nsu.mockquill.matchers.Matchers;
+import ru.nsu.mockquill.MyMock;
+import ru.nsu.mockquill.stub.Stub;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -12,20 +12,8 @@ import java.util.List;
  * Invocation handler for mocks.
  */
 public class MyInvocationHandler extends AbstractInvocationHandler {
-
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        List<ArgumentMatcher<?>> matchers = Matchers.pullMatchers();
-        Invocation invocation = new Invocation(proxy, method, args, matchers, this);
-        MyMock.setLastInvocation(invocation);
-        Stub stub = findStub(invocation);
-        if (stub != null) {
-            if (stub.exception()) {
-                throw (Throwable) stub.value();
-            } else {
-                return stub.value();
-            }
-        }
+    protected Object proceed(Method method, Object[] args) throws Throwable {
         return getDefaultValue(method.getReturnType());
     }
 

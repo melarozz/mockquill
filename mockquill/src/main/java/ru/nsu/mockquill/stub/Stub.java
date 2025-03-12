@@ -1,6 +1,6 @@
-package org.example.Stubbing;
+package ru.nsu.mockquill.stub;
 
-import org.example.Invocation.Invocation;
+import ru.nsu.mockquill.invocation.Invocation;
 
 /**
  * Represents a stubbed behavior.

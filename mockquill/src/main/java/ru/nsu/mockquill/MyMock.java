@@ -1,6 +1,6 @@
-package org.example;
+package ru.nsu.mockquill;
 
-import org.example.Invocation.Invocation;
+import ru.nsu.mockquill.invocation.Invocation;
 
 /**
  * Maintains a thread–local record of the last intercepted invocation.

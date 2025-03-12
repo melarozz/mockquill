@@ -1,7 +1,9 @@
-package org.example.AllMatchers;
+package ru.nsu.mockquill.matchers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 /**
  * Provides static matcher methods that can be used in stubbing.
@@ -24,6 +26,11 @@ public class Matchers {
     public static String matches(String regex) {
         matcherStack.get().add(new RegexMatcher(regex));
         return "";
+    }
+
+    public static <T> T customMatch(Supplier<T> callable) {
+        matcherStack.get().add(new CustomLambdaMatcher<>(callable));
+        return callable.get();
     }
 
     public static List<ArgumentMatcher<?>> pullMatchers() {

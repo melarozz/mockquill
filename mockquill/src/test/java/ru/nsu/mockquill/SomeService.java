@@ -1,4 +1,4 @@
-package org.example;
+package ru.nsu.mockquill;
 
 public interface SomeService {
     String getData();

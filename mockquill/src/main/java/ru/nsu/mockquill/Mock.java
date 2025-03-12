@@ -1,4 +1,4 @@
-package org.example;
+package ru.nsu.mockquill;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

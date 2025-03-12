@@ -1,6 +1,6 @@
-package org.example.Invocation;
+package ru.nsu.mockquill.invocation;
 
-import org.example.AllMatchers.ArgumentMatcher;
+import ru.nsu.mockquill.matchers.ArgumentMatcher;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
