@@ -53,4 +53,12 @@ public class SpyTest {
         assertEquals(8, spyCalculator.add(5, 3));
         assertEquals(50, spyCalculator.multiply(5, 10));
     }
+
+    @Test
+    public void testSpyWithArgs() {
+        Car realCar = new Car("Toyota", "Mark II", 1998);
+        realCar.accelerate(100);
+        Car spyCar = spy(realCar);
+        assertEquals(spyCar.getSpeed(), realCar.getSpeed(), 0.0001);
+    }
 }

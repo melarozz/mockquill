@@ -12,6 +12,7 @@ import org.example.Invocation.MyInvocationHandler;
 import org.example.Stubbing.OngoingStubbing;
 import org.example.Stubbing.OngoingStubbingImpl;
 import org.example.Invocation.SpyInvocationHandler;
+import sun.misc.Unsafe;
 
 /**
  * The main entry point for the mock framework.
@@ -126,17 +127,11 @@ public class MockFramework {
     @SuppressWarnings("unchecked")
     private static <T> T createClassSpy(T realObject) {
         try {
-            T spyInstance = new ByteBuddy()
-                    .subclass((Class<T>) realObject.getClass())
-                    .method(ElementMatchers.not(ElementMatchers.named("clone")))
-                    .intercept(InvocationHandlerAdapter.of(new SpyInvocationHandler(realObject)))
-                    .make()
-                    .load(realObject.getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
-                    .getLoaded()
-                    .getDeclaredConstructor()
-                    .newInstance();
+            T spyInstance = createSpyInstance(realObject);
 
+            // Copy fields from the original object to the spy instance
             copyFields(realObject, spyInstance);
+
             return spyInstance;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create spy for " + realObject.getClass(), e);
@@ -144,29 +139,61 @@ public class MockFramework {
     }
 
     /**
-     * Copies all declared fields from the source to the target instance.
-     * - This is a shallow copy.
-     * - Fields declared as final may not be updated.
+     * Creates a spy instance using ByteBuddy, with Unsafe to allocate memory.
      */
-    private static void copyFields(Object source, Object target) {
-        Class<?> clazz = source.getClass();
-        while (clazz != null) {
-            for (Field field : clazz.getDeclaredFields()) {
-                copyField(source, target, field);
+    private static <T> T createSpyInstance(T realObject) throws Exception {
+        Class<? extends T> byteBuddyClass = new ByteBuddy()
+                .subclass((Class<T>) realObject.getClass())
+                .method(ElementMatchers.not(ElementMatchers.named("clone")))
+                .intercept(InvocationHandlerAdapter.of(new SpyInvocationHandler(realObject)))
+                .make()
+                .load(realObject.getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+
+        return createInstanceWithoutConstructor(byteBuddyClass);
+    }
+
+    /**
+     * Allocates an instance using Unsafe to avoid invoking the constructor.
+     */
+    private static <T> T createInstanceWithoutConstructor(Class<? extends T> byteBuddyClass) throws Exception {
+        Unsafe unsafe = getUnsafeInstance();
+        return (T) unsafe.allocateInstance(byteBuddyClass);
+    }
+
+    /**
+     * Retrieves the Unsafe instance via reflection.
+     */
+    private static Unsafe getUnsafeInstance() throws Exception {
+        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        return (Unsafe) unsafeField.get(null);
+    }
+
+    /**
+     * Copies fields from the original object to the spy instance.
+     */
+    private static <T> void copyFields(T originalObject, T spyInstance) throws Exception {
+        Field[] fields = originalObject.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(originalObject);
+                if (value != null) {
+                    setFieldValue(spyInstance, field, value);
+                }
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                e.printStackTrace();
             }
-            clazz = clazz.getSuperclass();
         }
     }
 
     /**
-     * Copies a single field value from source to target.
+     * Sets a field value in the spy instance.
      */
-    private static void copyField(Object source, Object target, Field field) {
-        field.setAccessible(true);
-        try {
-            field.set(target, field.get(source));
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to copy field: " + field.getName(), e);
-        }
+    private static <T> void setFieldValue(T instance, Field field, Object value) throws NoSuchFieldException, IllegalAccessException {
+        Field fieldInstance = instance.getClass().getSuperclass().getDeclaredField(field.getName());
+        fieldInstance.setAccessible(true);
+        fieldInstance.set(instance, value);
     }
 }
