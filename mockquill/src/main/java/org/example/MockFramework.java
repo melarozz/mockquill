@@ -124,7 +124,6 @@ public class MockFramework {
     /**
      * Creates a spy for a concrete class using ByteBuddy.
      */
-    @SuppressWarnings("unchecked")
     private static <T> T createClassSpy(T realObject) {
         try {
             T spyInstance = createSpyInstance(realObject);
@@ -141,6 +140,7 @@ public class MockFramework {
     /**
      * Creates a spy instance using ByteBuddy, with Unsafe to allocate memory.
      */
+    @SuppressWarnings("unchecked")
     private static <T> T createSpyInstance(T realObject) throws Exception {
         Class<? extends T> byteBuddyClass = new ByteBuddy()
                 .subclass((Class<T>) realObject.getClass())
@@ -156,6 +156,7 @@ public class MockFramework {
     /**
      * Allocates an instance using Unsafe to avoid invoking the constructor.
      */
+    @SuppressWarnings("unchecked")
     private static <T> T createInstanceWithoutConstructor(Class<? extends T> byteBuddyClass) throws Exception {
         Unsafe unsafe = getUnsafeInstance();
         return (T) unsafe.allocateInstance(byteBuddyClass);
