@@ -36,7 +36,6 @@ public class Invocation {
      */
     @SuppressWarnings("unchecked")
     public boolean matches(Invocation actual) {
-        System.out.println(matchers + " MAZAFAKA");
         if (!method.equals(actual.method)) return false;
         if (args.length != actual.args.length) return false;
         for (int i = 0; i < args.length; i++) {

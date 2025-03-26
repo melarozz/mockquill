@@ -14,6 +14,7 @@ import ru.nsu.mockquill.invocation.Invocation;
 import ru.nsu.mockquill.invocation.MyInvocationHandler;
 import ru.nsu.mockquill.invocation.SpyInvocationHandler;
 import ru.nsu.mockquill.staticmock.Mazafaka;
+import ru.nsu.mockquill.staticmock.StaticInvocationHandler;
 import ru.nsu.mockquill.stub.OngoingStubbing;
 import ru.nsu.mockquill.stub.OngoingStubbingImpl;
 
@@ -79,6 +80,7 @@ public class MockFramework {
     }
 
     static <T> void createStaticClassMock(Class<T> clazz) {
+        StaticInvocationHandler.storeOriginalBytecode(clazz);
         ByteBuddyAgent.install();
         new ByteBuddy()
         .redefine(clazz)
@@ -88,13 +90,20 @@ public class MockFramework {
         .load(clazz.getClassLoader(), ClassReloadingStrategy.fromInstalledAgent());
     }
 
+    static <T> void restoreOriginal(Class<T> clazz) {
+        try {
+            StaticInvocationHandler.restoreOriginal(clazz);
+        } catch (java.io.IOException e) {
+            System.out.println("Can't restore class " + clazz.getName());
+        }
+    }
+
     /**
      * Captures a method invocation on a mock for stubbing.
      * Usage: when(mock.method(...)).thenReturn(...);
      */
     public static <T> OngoingStubbing<T> when(T methodCall) {
         Invocation invocation = MyMock.getLastInvocation();
-        System.out.println(invocation);
         return new OngoingStubbingImpl<>(invocation);
     }
 

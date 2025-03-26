@@ -34,7 +34,7 @@ public class Matchers {
 
     public static int anyInt() {
         matcherStack.get().add(new AnyIntMatcher());
-        return 0;
+        return 1;
     }
 
     public static String matches(String regex) {
@@ -49,22 +49,21 @@ public class Matchers {
 
     public static int customMatchInt(Predicate<Integer> callable) {
         matcherStack.get().add(new CustomLambdaMatcher<>(callable));
-        return 0;
+        return 1;
     }
 
     public static double customMatchDouble(Predicate<Double> callable) {
         matcherStack.get().add(new CustomLambdaMatcher<>(callable));
-        return 0;
+        return 1;
     }
 
     public static float customMatchFloat(Predicate<Float> callable) {
         matcherStack.get().add(new CustomLambdaMatcher<>(callable));
-        return 0;
+        return 1;
     }
 
     public static List<ArgumentMatcher<?>> pullMatchers() {
         List<ArgumentMatcher<?>> matchers = new ArrayList<>(matcherStack.get());
-        System.out.println(matchers + " HHHHHH");
         matcherStack.get().clear();
         return matchers;
     }

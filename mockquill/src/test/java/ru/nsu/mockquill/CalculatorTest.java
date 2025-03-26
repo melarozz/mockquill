@@ -1,10 +1,8 @@
 package ru.nsu.mockquill;
 
 import static org.junit.Assert.assertEquals;
-import static ru.nsu.mockquill.MockFramework.createStaticClassMock;
-import static ru.nsu.mockquill.MockFramework.when;
-import static ru.nsu.mockquill.matchers.Matchers.anyInt;
-import static ru.nsu.mockquill.matchers.Matchers.customMatchInt;
+import static ru.nsu.mockquill.MockFramework.*;
+import static ru.nsu.mockquill.matchers.Matchers.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,15 +29,21 @@ public class CalculatorTest {
     @Test
     public void testAddMethodStubStatic() {
         createStaticClassMock(Calculator.class);
-        when(Calculator.divide(2, 3)).thenReturn(10);
-        int result = Calculator.divide(2, 3);
+        when(Calculator.divide(24343434, 3)).thenReturn(10);
+        int result = Calculator.divide(24343434, 3);
         assertEquals(10, result);
     }
+
     @Test
     public void testAddMethodStubStaticLambda() {
         createStaticClassMock(Calculator.class);
-        when(Calculator.divide(anyInt(), 3)).thenReturn(10);
-        int result = Calculator.divide(224, 3);
+        when(Calculator.divide(customMatchInt((ctx) -> ctx > 478), eq(5))).thenReturn(10);
+        int result = Calculator.divide(487, 5);
         assertEquals(10, result);
+
+        restoreOriginal(Calculator.class);
+
+        result = Calculator.divide(100, 5);
+        assertEquals(20, result);
     }
 }
