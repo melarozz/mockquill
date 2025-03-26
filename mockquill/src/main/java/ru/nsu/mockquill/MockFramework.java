@@ -4,14 +4,20 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 import ru.nsu.mockquill.invocation.Invocation;
 import ru.nsu.mockquill.invocation.MyInvocationHandler;
 import ru.nsu.mockquill.invocation.SpyInvocationHandler;
+import ru.nsu.mockquill.staticmock.Mazafaka;
 import ru.nsu.mockquill.stub.OngoingStubbing;
 import ru.nsu.mockquill.stub.OngoingStubbingImpl;
+
+import static net.bytebuddy.matcher.ElementMatchers.isStatic;
 
 /**
  * The main entry–point for the framework.
@@ -72,12 +78,23 @@ public class MockFramework {
         }
     }
 
+    static <T> void createStaticClassMock(Class<T> clazz) {
+        ByteBuddyAgent.install();
+        new ByteBuddy()
+        .redefine(clazz)
+        .visit(Advice.to(Mazafaka.class)
+                .on(isStatic()))
+        .make()
+        .load(clazz.getClassLoader(), ClassReloadingStrategy.fromInstalledAgent());
+    }
+
     /**
      * Captures a method invocation on a mock for stubbing.
      * Usage: when(mock.method(...)).thenReturn(...);
      */
     public static <T> OngoingStubbing<T> when(T methodCall) {
         Invocation invocation = MyMock.getLastInvocation();
+        System.out.println(invocation);
         return new OngoingStubbingImpl<>(invocation);
     }
 

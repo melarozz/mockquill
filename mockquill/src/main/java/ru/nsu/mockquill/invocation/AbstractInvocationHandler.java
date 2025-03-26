@@ -35,7 +35,7 @@ public abstract class AbstractInvocationHandler implements InvocationHandler {
         // Извлекаем matchers
         List<ArgumentMatcher<?>> matchers = pullMatchers();
         // Создаем объект Invocation для текущего вызова
-        Invocation invocation = new Invocation(proxy, method, args, matchers, this);
+        Invocation invocation = new Invocation(new Object(), method, args, matchers, this);
         // Регистрируем вызов для stubbing
         MyMock.setLastInvocation(invocation);
 

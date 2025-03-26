@@ -1,12 +1,7 @@
 package ru.nsu.mockquill.invocation;
 
-import ru.nsu.mockquill.matchers.ArgumentMatcher;
-import ru.nsu.mockquill.matchers.Matchers;
-import ru.nsu.mockquill.MyMock;
-import ru.nsu.mockquill.stub.Stub;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * Invocation handler for mocks.

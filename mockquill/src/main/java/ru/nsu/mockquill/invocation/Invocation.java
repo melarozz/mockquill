@@ -14,7 +14,7 @@ import java.util.Objects;
 public class Invocation {
     private final Method method;
     private final Object[] args;
-    private final List<ArgumentMatcher<?>> matchers; // may be null if no matchers were used
+    public final List<ArgumentMatcher<?>> matchers; // may be null if no matchers were used
     private final AbstractInvocationHandler handler;
 
     public Invocation(Object proxy, Method method, Object[] args,
@@ -36,6 +36,7 @@ public class Invocation {
      */
     @SuppressWarnings("unchecked")
     public boolean matches(Invocation actual) {
+        System.out.println(matchers + " MAZAFAKA");
         if (!method.equals(actual.method)) return false;
         if (args.length != actual.args.length) return false;
         for (int i = 0; i < args.length; i++) {

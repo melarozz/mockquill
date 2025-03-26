@@ -38,10 +38,10 @@ public class ExampleTest {
     }
 
     @Test
-    public void testCustomMatch() {
-        when(someService.complexMethod(eq("input"), customMatch(() -> 123), matches("[a-z]")))
+    public void testCustomMatch() throws NoSuchMethodException {
+        when(someService.complexMethod(eq("input"), customMatchInt((ctx) -> ctx > 223), matches("[a-z]")))
                 .thenReturn("Complex Mocked Value");
-        assertEquals("Complex Mocked Value", someService.complexMethod("input", 123, "b"));
-        assertNotEquals("Complex Mocked Value", someService.complexMethod("input", 123, "1"));
+        assertEquals("Complex Mocked Value", someService.complexMethod("input", 2274853, "a"));
+        assertNotEquals("Complex Mocked Value", someService.complexMethod("input", 0, "a"));
     }
 }
