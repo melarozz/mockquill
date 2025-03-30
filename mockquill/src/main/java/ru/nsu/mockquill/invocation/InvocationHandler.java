@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
 /**
  * Invocation handler for mocks.
  */
-public class MyInvocationHandler extends AbstractInvocationHandler {
+public class InvocationHandler extends AbstractInvocationHandler {
     @Override
-    protected Object proceed(Method method, Object[] args) throws Throwable {
+    protected Object proceed(Method method, Object[] args) {
         return getDefaultValue(method.getReturnType());
     }
 

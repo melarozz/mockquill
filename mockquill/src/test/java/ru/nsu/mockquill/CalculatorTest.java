@@ -1,6 +1,7 @@
 package ru.nsu.mockquill;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static ru.nsu.mockquill.MockFramework.*;
 import static ru.nsu.mockquill.matchers.Matchers.*;
 
@@ -30,8 +31,15 @@ public class CalculatorTest {
     public void testAddMethodStubStatic() {
         createStaticClassMock(Calculator.class);
         when(Calculator.divide(24343434, 3)).thenReturn(10);
-        int result = Calculator.divide(24343434, 3);
-        assertEquals(10, result);
+        assertEquals(10, Calculator.divide(24343434, 3));
+        restoreOriginal(Calculator.class);
+
+        createStaticClassMock(Calculator.class);
+        when(Calculator.divide(24343434, 3)).thenThrow(new RuntimeException("Error"));
+        assertThrows(RuntimeException.class, () -> Calculator.divide(24343434, 3));
+        restoreOriginal(Calculator.class);
+
+        assertEquals(3, Calculator.divide(9, 3));
     }
 
     @Test

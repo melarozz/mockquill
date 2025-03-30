@@ -1,6 +1,6 @@
 package ru.nsu.mockquill.invocation;
 
-import ru.nsu.mockquill.MyMock;
+import ru.nsu.mockquill.InvocationStorage;
 import ru.nsu.mockquill.matchers.ArgumentMatcher;
 import ru.nsu.mockquill.stub.Stub;
 
@@ -37,7 +37,7 @@ public abstract class AbstractInvocationHandler implements InvocationHandler {
         // Создаем объект Invocation для текущего вызова
         Invocation invocation = new Invocation(new Object(), method, args, matchers, this);
         // Регистрируем вызов для stubbing
-        MyMock.setLastInvocation(invocation);
+        InvocationStorage.setLastInvocation(invocation);
 
         // Если найден stub, возвращаем его значение (либо выбрасываем исключение)
         Stub stub = findStub(invocation);

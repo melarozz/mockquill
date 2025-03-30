@@ -1,8 +1,5 @@
 package ru.nsu.mockquill;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Proxy;
-
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.asm.Advice;
@@ -11,12 +8,15 @@ import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
 import ru.nsu.mockquill.invocation.Invocation;
-import ru.nsu.mockquill.invocation.MyInvocationHandler;
+import ru.nsu.mockquill.invocation.InvocationHandler;
 import ru.nsu.mockquill.invocation.SpyInvocationHandler;
-import ru.nsu.mockquill.staticmock.Mazafaka;
-import ru.nsu.mockquill.staticmock.StaticInvocationHandler;
+import ru.nsu.mockquill.invocation.StaticInvocation;
+import ru.nsu.mockquill.invocation.StaticInvocationHandler;
 import ru.nsu.mockquill.stub.OngoingStubbing;
 import ru.nsu.mockquill.stub.OngoingStubbingImpl;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
 
 import static net.bytebuddy.matcher.ElementMatchers.isStatic;
 
@@ -46,7 +46,7 @@ public class MockFramework {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T createInterfaceMock(Class<T> clazz, MyInvocationHandler handler) {
+    private static <T> T createInterfaceMock(Class<T> clazz, InvocationHandler handler) {
         return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[]{clazz}, handler);
     }
 
@@ -57,13 +57,13 @@ public class MockFramework {
      */
     @SuppressWarnings("unchecked")
     public static <T> T mock(Class<T> clazz) {
-        MyInvocationHandler handler = new MyInvocationHandler();
+        InvocationHandler handler = new InvocationHandler();
 
         return clazz.isInterface() ? createInterfaceMock(clazz, handler)
                 : createClassMock(clazz, handler);
     }
 
-    private static <T> T createClassMock(Class<T> clazz, MyInvocationHandler handler) {
+    private static <T> T createClassMock(Class<T> clazz, InvocationHandler handler) {
         try {
             return new ByteBuddy()
                     .subclass(clazz)
@@ -81,18 +81,21 @@ public class MockFramework {
 
     static <T> void createStaticClassMock(Class<T> clazz) {
         StaticInvocationHandler.storeOriginalBytecode(clazz);
+        InvocationStorage.staticInvocationHandler = new StaticInvocationHandler();
         ByteBuddyAgent.install();
         new ByteBuddy()
-        .redefine(clazz)
-        .visit(Advice.to(Mazafaka.class)
-                .on(isStatic()))
-        .make()
-        .load(clazz.getClassLoader(), ClassReloadingStrategy.fromInstalledAgent());
+                .redefine(clazz)
+                .visit(Advice.to(StaticInvocation.class)
+                        .on(isStatic()))
+                .make()
+                .load(clazz.getClassLoader(), ClassReloadingStrategy.fromInstalledAgent());
     }
 
     static <T> void restoreOriginal(Class<T> clazz) {
         try {
             StaticInvocationHandler.restoreOriginal(clazz);
+            StaticInvocationHandler.stubs.clear();
+            System.out.println("Original bytecode restored for " + clazz.getName());
         } catch (java.io.IOException e) {
             System.out.println("Can't restore class " + clazz.getName());
         }
@@ -103,7 +106,7 @@ public class MockFramework {
      * Usage: when(mock.method(...)).thenReturn(...);
      */
     public static <T> OngoingStubbing<T> when(T methodCall) {
-        Invocation invocation = MyMock.getLastInvocation();
+        Invocation invocation = InvocationStorage.getLastInvocation();
         return new OngoingStubbingImpl<>(invocation);
     }
 
@@ -115,6 +118,7 @@ public class MockFramework {
         return realObject.getClass().isInterface() ? createInterfaceSpy(realObject)
                 : createClassSpy(realObject);
     }
+
     /**
      * Создаёт шпион для интерфейса с использованием Java Proxy.
      */

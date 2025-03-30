@@ -12,9 +12,9 @@ import java.util.Objects;
  * If matchers were used (via Matchers.eq, etc.) they are stored in the matchers list.
  */
 public class Invocation {
+    public final List<ArgumentMatcher<?>> matchers; // may be null if no matchers were used
     private final Method method;
     private final Object[] args;
-    public final List<ArgumentMatcher<?>> matchers; // may be null if no matchers were used
     private final AbstractInvocationHandler handler;
 
     public Invocation(Object proxy, Method method, Object[] args,
