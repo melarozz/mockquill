@@ -1,4 +1,4 @@
-package org.example.Stubbing;
+package ru.nsu.mockquill.stub;
 
 /**
  * API to set stubbed behavior.

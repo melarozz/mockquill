@@ -1,4 +1,4 @@
-package org.example.Invocation;
+package ru.nsu.mockquill.invocation;
 
 import java.lang.reflect.Method;
 

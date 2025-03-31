@@ -1,16 +1,14 @@
-package org.example.Invocation;
+package ru.nsu.mockquill.invocation;
+
 
 import java.lang.reflect.Method;
 
 /**
- * Invocation handler для моков.
- * Если для вызова не настроена заглушка, возвращаются значения по умолчанию,
- * соответствующие типу возвращаемого значения метода.
+ * Invocation handler for mocks.
  */
-public class MyInvocationHandler extends AbstractInvocationHandler {
-
+public class InvocationHandler extends AbstractInvocationHandler {
     @Override
-    protected Object proceed(Method method, Object[] args) throws Throwable {
+    protected Object proceed(Method method, Object[] args) {
         return getDefaultValue(method.getReturnType());
     }
 

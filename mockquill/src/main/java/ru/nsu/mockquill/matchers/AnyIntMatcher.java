@@ -1,4 +1,4 @@
-package org.example.AllMatchers;
+package ru.nsu.mockquill.matchers;
 
 /**
  * Matches any int value.

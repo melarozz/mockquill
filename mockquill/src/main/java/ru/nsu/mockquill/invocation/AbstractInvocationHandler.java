@@ -1,20 +1,18 @@
-package org.example.Invocation;
+package ru.nsu.mockquill.invocation;
 
-import org.example.AllMatchers.ArgumentMatcher;
-import org.example.Stubbing.Stub;
+import ru.nsu.mockquill.InvocationStorage;
+import ru.nsu.mockquill.matchers.ArgumentMatcher;
+import ru.nsu.mockquill.stub.Stub;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.nsu.mockquill.matchers.Matchers.pullMatchers;
+
 /**
- * Базовый класс для invocation handlers (как для моков, так и для спаев).
- * Реализует общий алгоритм:
- * 1. Извлечение matchers;
- * 2. Создание объекта Invocation и сохранение его для stubbing;
- * 3. Поиск подходящего stub;
- * 4. Если stub найден, возвращается его значение (или выбрасывается исключение);
- * 5. Если stub не найден, вызывается абстрактный метод proceed, реализуемый подклассами.
+ * Base class for our invocation handlers (for both mocks and spies).
  */
 public abstract class AbstractInvocationHandler implements InvocationHandler {
     protected List<Stub> stubs = new ArrayList<>();
@@ -35,11 +33,11 @@ public abstract class AbstractInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         // Извлекаем matchers
-        List<ArgumentMatcher<?>> matchers = org.example.AllMatchers.Matchers.pullMatchers();
+        List<ArgumentMatcher<?>> matchers = pullMatchers();
         // Создаем объект Invocation для текущего вызова
-        Invocation invocation = new Invocation(proxy, method, args, matchers, this);
+        Invocation invocation = new Invocation(new Object(), method, args, matchers, this);
         // Регистрируем вызов для stubbing
-        org.example.MyMock.setLastInvocation(invocation);
+        InvocationStorage.setLastInvocation(invocation);
 
         // Если найден stub, возвращаем его значение (либо выбрасываем исключение)
         Stub stub = findStub(invocation);
