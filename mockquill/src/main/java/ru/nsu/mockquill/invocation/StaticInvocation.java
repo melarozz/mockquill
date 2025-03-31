@@ -30,6 +30,7 @@ public class StaticInvocation extends AbstractInvocationHandler {
                 throw (Throwable) stub.value();
             } else {
                 ret = stub.value();
+                return;
             }
         }
 
