@@ -1,12 +1,12 @@
 package ru.nsu.mockquill;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static ru.nsu.mockquill.MockFramework.spy;
 import static ru.nsu.mockquill.MockFramework.when;
 import static ru.nsu.mockquill.matchers.Matchers.anyInt;
 import static ru.nsu.mockquill.matchers.Matchers.eq;
-
-import org.junit.Test;
 
 public class SpyTest {
 
@@ -52,5 +52,13 @@ public class SpyTest {
 
         assertEquals(8, spyCalculator.add(5, 3));
         assertEquals(50, spyCalculator.multiply(5, 10));
+    }
+
+    @Test
+    public void testSpyWithArgs() {
+        Car realCar = new Car("Toyota", "Mark II", 1998);
+        realCar.accelerate(100);
+        Car spyCar = spy(realCar);
+        assertEquals(spyCar.getSpeed(), realCar.getSpeed(), 0.0001);
     }
 }

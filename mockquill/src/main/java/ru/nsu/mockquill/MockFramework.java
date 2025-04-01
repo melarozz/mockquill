@@ -14,6 +14,7 @@ import ru.nsu.mockquill.invocation.StaticInvocation;
 import ru.nsu.mockquill.invocation.StaticInvocationHandler;
 import ru.nsu.mockquill.stub.OngoingStubbing;
 import ru.nsu.mockquill.stub.OngoingStubbingImpl;
+import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -107,6 +108,11 @@ public class MockFramework {
      */
     public static <T> OngoingStubbing<T> when(T methodCall) {
         Invocation invocation = InvocationStorage.getLastInvocation();
+
+        if (invocation == null) {
+            throw new IllegalStateException("No invocation captured for stubbing.");
+        }
+        InvocationStorage.clearLastInvocation();
         return new OngoingStubbingImpl<>(invocation);
     }
 
@@ -132,25 +138,53 @@ public class MockFramework {
     }
 
     /**
+     * Retrieves the Unsafe instance via reflection.
+     */
+    private static Unsafe getUnsafeInstance() throws Exception {
+        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        return (Unsafe) unsafeField.get(null);
+    }
+
+    /**
+     * Allocates an instance using Unsafe to avoid invoking the constructor.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T createInstanceWithoutConstructor(Class<? extends T> byteBuddyClass) throws Exception {
+        Unsafe unsafe = getUnsafeInstance();
+        return (T) unsafe.allocateInstance(byteBuddyClass);
+    }
+
+    /**
+     * Creates a spy instance using ByteBuddy, with Unsafe to allocate memory.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T createSpyInstance(T realObject) throws Exception {
+        Class<? extends T> byteBuddyClass = new ByteBuddy()
+                .subclass((Class<T>) realObject.getClass())
+                .method(ElementMatchers.not(ElementMatchers.named("clone")))
+                .intercept(InvocationHandlerAdapter.of(new SpyInvocationHandler(realObject)))
+                .make()
+                .load(realObject.getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+
+        return createInstanceWithoutConstructor(byteBuddyClass);
+    }
+
+    /**
      * Создаёт шпион для конкретного класса с использованием ByteBuddy.
      */
     @SuppressWarnings("unchecked")
     private static <T> T createClassSpy(T realObject) {
         try {
-            T spyInstance = new ByteBuddy()
-                    .subclass((Class<T>) realObject.getClass())
-                    .method(ElementMatchers.not(ElementMatchers.named("clone")))
-                    .intercept(InvocationHandlerAdapter.of(new SpyInvocationHandler(realObject)))
-                    .make()
-                    .load(realObject.getClass().getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
-                    .getLoaded()
-                    .getDeclaredConstructor()
-                    .newInstance();
+            T spyInstance = createSpyInstance(realObject);
 
+            // Copy fields from the original object to the spy instance
             copyFields(realObject, spyInstance);
+
             return spyInstance;
         } catch (Exception e) {
-            throw new RuntimeException("Cannot make spy on " + realObject.getClass(), e);
+            throw new RuntimeException("Failed to create spy for " + realObject.getClass(), e);
         }
     }
 
@@ -159,14 +193,25 @@ public class MockFramework {
      * - Это shallow копирование.
      * - Финальные поля могут не обновляться.
      */
-    private static void copyFields(Object source, Object target) {
-        Class<?> clazz = source.getClass();
-        while (clazz != null) {
-            for (Field field : clazz.getDeclaredFields()) {
-                copyField(source, target, field);
+    private static void copyFields(Object originalObject, Object spyInstance) {
+        Field[] fields = originalObject.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(originalObject);
+                if (value != null) {
+                    setFieldValue(spyInstance, field, value);
+                }
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                e.printStackTrace();
             }
-            clazz = clazz.getSuperclass();
         }
+    }
+
+    private static <T> void setFieldValue(T instance, Field field, Object value) throws NoSuchFieldException, IllegalAccessException {
+        Field fieldInstance = instance.getClass().getSuperclass().getDeclaredField(field.getName());
+        fieldInstance.setAccessible(true);
+        fieldInstance.set(instance, value);
     }
 
     /**

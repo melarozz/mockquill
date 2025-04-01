@@ -1,27 +1,26 @@
 package ru.nsu.mockquill.invocation;
 
+import java.lang.reflect.Method;
 import ru.nsu.mockquill.matchers.ArgumentMatcher;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Records a method call on a mock.
- * If matchers were used (via Matchers.eq, etc.) they are stored in the matchers list.
+ * Класс, записывающий вызов метода на mock-объекте.
+ * Если при вызове использовались matchers (например, Matchers.eq(...)), они сохраняются в списке.
  */
 public class Invocation {
-    public final List<ArgumentMatcher<?>> matchers; // may be null if no matchers were used
     private final Method method;
     private final Object[] args;
+    private final List<ArgumentMatcher<?>> matchers; // Может быть null, если matchers не использовались
     private final AbstractInvocationHandler handler;
 
     public Invocation(Object proxy, Method method, Object[] args,
                       List<ArgumentMatcher<?>> matchers, AbstractInvocationHandler handler) {
         this.method = method;
         this.args = args != null ? args : new Object[0];
-        // if the number of matchers equals the number of arguments, we use them.
         this.matchers = (matchers != null && matchers.size() == this.args.length) ? matchers : null;
         this.handler = handler;
     }
@@ -31,8 +30,8 @@ public class Invocation {
     }
 
     /**
-     * Checks whether this (expected) invocation matches an actual invocation.
-     * If matchers are defined for each parameter, their match() method is used.
+     * Сравнивает ожидаемый вызов с фактическим.
+     * Если для каждого параметра заданы matchers, используется их метод matches().
      */
     @SuppressWarnings("unchecked")
     public boolean matches(Invocation actual) {
