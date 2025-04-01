@@ -12,7 +12,13 @@ import java.util.List;
 import static ru.nsu.mockquill.matchers.Matchers.pullMatchers;
 
 /**
- * Base class for our invocation handlers (for both mocks and spies).
+ * Базовый класс для invocation handlers (как для моков, так и для спаев).
+ * Реализует общий алгоритм:
+ * 1. Извлечение matchers;
+ * 2. Создание объекта Invocation и сохранение его для stubbing;
+ * 3. Поиск подходящего stub;
+ * 4. Если stub найден, возвращается его значение (или выбрасывается исключение);
+ * 5. Если stub не найден, вызывается абстрактный метод proceed, реализуемый подклассами.
  */
 public abstract class AbstractInvocationHandler implements InvocationHandler {
     protected List<Stub> stubs = new ArrayList<>();
