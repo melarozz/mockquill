@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import static ru.nsu.mockquill.MockFramework.*;
 import static ru.nsu.mockquill.matchers.Matchers.*;
 
-import org.example.Car;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,14 +25,16 @@ public class DemoTest {
         assertEquals(10, calculator.add(2, 3)); // есть заглушка - выдаем 10 всегда
         assertEquals(0, calculator.multiply(2, 3)); // нет заглушки - default value 0
 
-        assertNull(someService.getData());
+        assertNull(someService.getData()); // еще нет заглушки
         when(someService.getData()).thenReturn("Mocked Data");
-        assertEquals("Mocked Data", someService.getData());
+        assertEquals("Mocked Data", someService.getData()); // вернулось ожидаемое значение
 
         when(someService.complexMethod(eq("input"), anyInt(), matches("[a-z]")))
-                .thenReturn("Complex Mocked Value");
+                .thenReturn("Complex Mocked Value"); // ставим заглушку с матчерами
         assertEquals("Complex Mocked Value",
-                someService.complexMethod("input", 500, "a"));
+                someService.complexMethod("input", 500, "a")); // вернули заглушку
+        assertNotEquals("Complex Mocked Value",
+                someService.complexMethod("NOTinput", 500, "a")); // аргументы не подходят
     }
 
     @Test
@@ -54,11 +55,6 @@ public class DemoTest {
     @Test
     public void testStaticMocking() {
         createStaticClassMock(Calculator.class);
-        when(Calculator.divide(24343434, 3)).thenReturn(10);
-        assertEquals(10, Calculator.divide(24343434, 3));
-        restoreOriginal(Calculator.class);
-
-        createStaticClassMock(Calculator.class);
         when(Calculator.divide(24343434, 3)).thenThrow(new RuntimeException("Error"));
         assertThrows(RuntimeException.class, () -> Calculator.divide(24343434, 3));
         restoreOriginal(Calculator.class);
@@ -69,8 +65,7 @@ public class DemoTest {
         createStaticClassMock(Calculator.class);
         when(Calculator.divide(customMatchInt(ctx -> ctx > 478), eq(5))).thenReturn(10);
         assertEquals(10, Calculator.divide(487, 5));
-        restoreOriginal(Calculator.class);
-        assertEquals(20, Calculator.divide(100, 5));
+        assertNotEquals(10, Calculator.divide(478, 5)); // аргументы не подходят
     }
 
     @Test
